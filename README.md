@@ -10,7 +10,9 @@ git submodule update --init --recursive
 引擎下载地址：
 https://github.com/cocos2d/cocos2d-x/releases 
 
+
 ## 项目结构树状图：
+```plaintext
 RedInfinity_CodeTest
 ├── .gitignore
 ├── .gitmodules
@@ -68,6 +70,7 @@ RedInfinity_CodeTest
     ├── levels
     │   └── level_1.json
     └── res/
+```
 
 # 程序设计文档
 ## 一、系统架构
