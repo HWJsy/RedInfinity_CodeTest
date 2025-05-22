@@ -3,9 +3,11 @@
 项目使用 Git 子模块引入 Cocos2d-x 引擎源码。  
 首次克隆项目后，请执行以下命令初始化子模块：
 
-git submodule update --init --recursive
+`git submodule update --init --recursive`
 
 如果不使用子模块，请手动下载 Cocos2d-x v3.17.2并将其cocos2d/文件夹放置替换项目根目录下的 cocos2d/ 文件夹。
+
+PS：我自己在本地测试克隆该项目时，在执行`git submodule update --init --recursive`后，出现网络错误。所以我是直接将本地的 cocos2d/ 文件夹复制到了该项目根目录下的 cocos2d/ 文件夹中
 
 引擎下载地址：
 https://github.com/cocos2d/cocos2d-x/releases 
