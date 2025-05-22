@@ -35,12 +35,14 @@ std::string ResourcePath::getLevelConfigPath(int levelId)
 
 std::string ResourcePath::getResourceRootPath()
 {
-    // 根据不同平台返回不同的资源根路径
-#ifdef CC_TARGET_PLATFORM_WIN32
-    return "Resources/";
-#elif defined(CC_TARGET_PLATFORM_ANDROID) || defined(CC_TARGET_PLATFORM_IOS)
-    return ""; // 在移动平台上，资源直接位于应用包根目录
-#else
-    return ""; // 默认返回空
-#endif
+    #ifdef CC_TARGET_PLATFORM_WIN32
+        // Windows 平台资源路径
+        return "Resources/";
+    #elif defined(CC_TARGET_PLATFORM_ANDROID) || defined(CC_TARGET_PLATFORM_IOS)
+        // 移动平台资源路径，通常在包内根目录
+        return "";
+    #else
+        // 其他平台，默认空字符串
+        return "";
+    #endif
 }

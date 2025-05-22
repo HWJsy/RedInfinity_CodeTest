@@ -1,23 +1,16 @@
 #include "LevelConfig.h"
 
-LevelConfig::LevelConfig()
-{
-}
+LevelConfig::LevelConfig() {}
 
-LevelConfig::~LevelConfig()
-{
-}
+LevelConfig::~LevelConfig() {}
 
-bool LevelConfig::loadFromFile(const std::string& filePath)
-{
-    // 读取文件内容
-    std::string content = FileUtils::getInstance()->getStringFromFile(filePath);
+bool LevelConfig::loadFromFile(const std::string& filePath) {
+    std::string content = cocos2d::FileUtils::getInstance()->getStringFromFile(filePath);
     if (content.empty()) {
         CCLOGERROR("Failed to load level config: %s", filePath.c_str());
         return false;
     }
 
-    // 解析JSON
     rapidjson::Document doc;
     doc.Parse(content.c_str());
 
@@ -26,7 +19,7 @@ bool LevelConfig::loadFromFile(const std::string& filePath)
         return false;
     }
 
-    // 解析主牌堆配置
+    // 主牌堆
     if (doc.HasMember("Playfield") && doc["Playfield"].IsArray()) {
         const rapidjson::Value& playfieldArray = doc["Playfield"];
         for (rapidjson::SizeType i = 0; i < playfieldArray.Size(); i++) {
@@ -44,7 +37,7 @@ bool LevelConfig::loadFromFile(const std::string& filePath)
         }
     }
 
-    // 解析备用牌堆配置
+    // 备用牌堆
     if (doc.HasMember("Stack") && doc["Stack"].IsArray()) {
         const rapidjson::Value& stackArray = doc["Stack"];
         for (rapidjson::SizeType i = 0; i < stackArray.Size(); i++) {
@@ -53,9 +46,7 @@ bool LevelConfig::loadFromFile(const std::string& filePath)
             CardConfig cardCfg;
             cardCfg.face = cardObj["CardFace"].GetInt();
             cardCfg.suit = cardObj["CardSuit"].GetInt();
-
-            // 备用牌堆初始位置可以忽略，游戏会自动摆放
-            cardCfg.pos = cocos2d::Vec2::ZERO;
+            cardCfg.pos = cocos2d::Vec2::ZERO; // 备用牌堆位置由模型决定
 
             _stockCards.push_back(cardCfg);
         }
@@ -64,12 +55,10 @@ bool LevelConfig::loadFromFile(const std::string& filePath)
     return true;
 }
 
-void LevelConfig::addPlayfieldCard(const CardConfig& card)
-{
+void LevelConfig::addPlayfieldCard(const CardConfig& card) {
     _playfieldCards.push_back(card);
 }
 
-void LevelConfig::addStockCard(const CardConfig& card)
-{
+void LevelConfig::addStockCard(const CardConfig& card) {
     _stockCards.push_back(card);
 }

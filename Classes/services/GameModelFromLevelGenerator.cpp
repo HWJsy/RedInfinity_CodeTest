@@ -1,7 +1,11 @@
 #include "GameModelFromLevelGenerator.h"
 #include "models/CardModel.h"
-#include "configs/loaders/LevelConfigLoader.h"  // ?? ÐÂÔö
+#include "configs/loaders/LevelConfigLoader.h"
+
 USING_NS_CC;
+
+GameModelFromLevelGenerator::GameModelFromLevelGenerator() {}
+GameModelFromLevelGenerator::~GameModelFromLevelGenerator() {}
 
 GameModel* GameModelFromLevelGenerator::generateGameModel(int levelId)
 {

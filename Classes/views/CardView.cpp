@@ -58,50 +58,18 @@ void CardView::updateView()
     if (!_cardModel) return;
     removeAllChildren();
 
-    // 1. 卡牌背景
-    auto bgPath = ResourcePath::getCardPath("card_general.png");
-    if (!FileUtils::getInstance()->isFileExist(bgPath)) {
-        CCLOGERROR("CardView[%d]: bg file not found: %s", _cardId, bgPath.c_str());
-        return;
-    }
-    auto cardBg = Sprite::create(bgPath);
-    if (!cardBg) {
-        CCLOGERROR("CardView[%d]: failed to create bg sprite", _cardId);
-        return;
-    }
+    auto cardBg = drawBackground();
+    if (!cardBg) return;
 
-    cardBg->setAnchorPoint(Vec2(0, 0)); // 左下角对齐
-    cardBg->setPosition(Vec2(0, 0));    // 放在 CardView 原点
-    addChild(cardBg);
-
-    // 拿到背景尺寸
     Size bgSize = cardBg->getContentSize();
-
     setContentSize(bgSize);
-    float bgW = bgSize.width, bgH = bgSize.height;
 
-    // 2. 花色图标 43×43，放右上
-    std::string suitName;
-    switch (_cardModel->getSuit()) {
-    case CardSuitType::CST_CLUBS:    suitName = "club";    break;
-    case CardSuitType::CST_DIAMONDS: suitName = "diamond"; break;
-    case CardSuitType::CST_HEARTS:   suitName = "heart";   break;
-    case CardSuitType::CST_SPADES:   suitName = "spade";   break;
-    default:                         suitName = "club";    break;
-    }
-    auto suitPath = ResourcePath::getSuitPath(suitName + ".png");
-    auto suitSprite = Sprite::create(suitPath);
-    if (suitSprite) {
-        float x = bgW - suitSprite->getContentSize().width - 30;
-        float y = bgH - suitSprite->getContentSize().height - 30;
-        suitSprite->setPosition(Vec2(x, y));
-        suitSprite->setAnchorPoint(Vec2(0, 0));
-        cardBg->addChild(suitSprite);
-    }
+    drawSuit(cardBg);
 
-    // 获取数字资源
+    // 获取数字颜色及字符串
     std::string color = (_cardModel->getSuit() == CardSuitType::CST_CLUBS || _cardModel->getSuit() == CardSuitType::CST_SPADES)
         ? "black" : "red";
+
     std::string numberStr;
     switch (_cardModel->getFace()) {
     case CardFaceType::CFT_ACE:   numberStr = "A";  break;
@@ -120,28 +88,78 @@ void CardView::updateView()
     default:                      numberStr = "A";  break;
     }
 
-    // 3. 大数字
-    auto bigPath = ResourcePath::getNumberPath("big_" + color + "_" + numberStr + ".png");
-    auto bigSprite = Sprite::create(bigPath);
-    if (bigSprite) {
-        float x = (bgW - bigSprite->getContentSize().width) * 0.5f;
-        float y = (bgH - bigSprite->getContentSize().height) * 0.5f;
-        bigSprite->setAnchorPoint(Vec2(0, 0));
-        bigSprite->setPosition(Vec2(x, y));
-        cardBg->addChild(bigSprite);
+    drawNumber(cardBg, color, numberStr, true);  // 大数字
+    drawNumber(cardBg, color, numberStr, false); // 小数字
+}
+
+cocos2d::Sprite* CardView::drawBackground()
+{
+    auto bgPath = ResourcePath::getCardPath("card_general.png");
+    if (!FileUtils::getInstance()->isFileExist(bgPath)) {
+        CCLOGERROR("CardView[%d]: bg file not found: %s", _cardId, bgPath.c_str());
+        return nullptr;
+    }
+    auto cardBg = Sprite::create(bgPath);
+    if (!cardBg) {
+        CCLOGERROR("CardView[%d]: failed to create bg sprite", _cardId);
+        return nullptr;
+    }
+    cardBg->setAnchorPoint(Vec2(0, 0)); // 左下角对齐
+    cardBg->setPosition(Vec2(0, 0));    // 放在 CardView 原点
+    addChild(cardBg);
+    return cardBg;
+}
+
+void CardView::drawSuit(cocos2d::Sprite* parent)
+{
+    if (!_cardModel || !parent) return;
+
+    std::string suitName;
+    switch (_cardModel->getSuit()) {
+    case CardSuitType::CST_CLUBS:    suitName = "club";    break;
+    case CardSuitType::CST_DIAMONDS: suitName = "diamond"; break;
+    case CardSuitType::CST_HEARTS:   suitName = "heart";   break;
+    case CardSuitType::CST_SPADES:   suitName = "spade";   break;
+    default:                         suitName = "club";    break;
     }
 
-    // 4. 小数字
-    auto smallPath = ResourcePath::getNumberPath("small_" + color + "_" + numberStr + ".png");
-    auto smallSprite = Sprite::create(smallPath);
-    if (smallSprite) {
+    auto suitPath = ResourcePath::getSuitPath(suitName + ".png");
+    auto suitSprite = Sprite::create(suitPath);
+    if (suitSprite) {
+        Size bgSize = parent->getContentSize();
+        float x = bgSize.width - suitSprite->getContentSize().width - 30;
+        float y = bgSize.height - suitSprite->getContentSize().height - 30;
+        suitSprite->setPosition(Vec2(x, y));
+        suitSprite->setAnchorPoint(Vec2(0, 0));
+        parent->addChild(suitSprite);
+    }
+}
+
+void CardView::drawNumber(cocos2d::Sprite* parent, const std::string& color, const std::string& numberStr, bool isBig)
+{
+    if (!parent) return;
+
+    std::string prefix = isBig ? "big_" : "small_";
+    auto numberPath = ResourcePath::getNumberPath(prefix + color + "_" + numberStr + ".png");
+    auto numberSprite = Sprite::create(numberPath);
+    if (!numberSprite) return;
+
+    Size bgSize = parent->getContentSize();
+
+    if (isBig) {
+        float x = (bgSize.width - numberSprite->getContentSize().width) * 0.5f;
+        float y = (bgSize.height - numberSprite->getContentSize().height) * 0.5f;
+        numberSprite->setAnchorPoint(Vec2(0, 0));
+        numberSprite->setPosition(Vec2(x, y));
+    }
+    else {
         float x = 30;
-        float y = bgH - smallSprite->getContentSize().height - 30;
-        smallSprite->setAnchorPoint(Vec2(0, 0));
-        smallSprite->setPosition(Vec2(x, y));
-        cardBg->addChild(smallSprite);
+        float y = bgSize.height - numberSprite->getContentSize().height - 30;
+        numberSprite->setAnchorPoint(Vec2(0, 0));
+        numberSprite->setPosition(Vec2(x, y));
     }
 
+    parent->addChild(numberSprite);
 }
 
 void CardView::setClickCallback(const std::function<void(int)>& callback)
